@@ -1,0 +1,9 @@
+{
+  "type": "rich",
+  "version": "1.0",
+  "title": "oEmbed Rich XSS",
+  "html": "<script>window.top.open('calculator://')</script><p>oEmbed HTML content</p>",
+  "width": 400,
+  "height": 200,
+  "provider_name": "XSS Test"
+}

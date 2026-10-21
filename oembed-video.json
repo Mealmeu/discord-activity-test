@@ -1,0 +1,9 @@
+{
+  "type": "video",
+  "version": "1.0",
+  "title": "oEmbed Video XSS",
+  "html": "<iframe src=\"javascript:window.top.open('calculator://')\" width=\"400\" height=\"300\"></iframe>",
+  "width": 400,
+  "height": 300,
+  "provider_name": "XSS Test"
+}
